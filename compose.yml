@@ -1,0 +1,15 @@
+services:
+  mock-server:
+    container_name: mock-server
+    build: ./mock-server
+    ports:
+      - "4000:4000"
+    restart: unless-stopped
+    volumes:
+      - ./mock-server:/app
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
