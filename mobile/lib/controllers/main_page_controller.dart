@@ -1,43 +1,55 @@
 import 'package:fl_location/fl_location.dart';
-import 'package:flutter/widgets.dart';
-import 'package:gps_tracker/controllers/base_controller.dart';
+import 'package:get/get.dart';
+import 'package:gps_tracker/services/database_service.dart';
 import 'package:gps_tracker/services/location_service.dart';
-import 'package:gps_tracker/utils/error_handler_mixin.dart';
 
-class MainPageController extends BaseController with ErrorHandlerMixin {
-  final ValueNotifier<Location?> locationListenable = ValueNotifier(null);
+class MainPageController extends GetxController {
+  Rx<Location?> location = Rx<Location?>(null);
+  List<Map<String, dynamic>> storedLocations = <Map<String, dynamic>>[].obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _initDatabase();
+    LocationService.instance.addLocationChangedCallback(_onLocationChanged);
+    _startLocationService();
+  }
+
+  Future<void> _initDatabase() async {
+    storedLocations.assignAll(DatabaseService.instance.getAllLocations());
+  }
+
+  void _onLocationChanged(Location loc) {
+    location.value = loc;
+
+    // Save to DB
+    DatabaseService.instance.insertLocation(
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+      accuracy: loc.accuracy,
+      altitude: loc.altitude,
+      heading: loc.heading,
+      speed: loc.speed,
+      timestamp: loc.timestamp.toString(),
+    );
+
+    // Update in-memory list
+    storedLocations.assignAll(DatabaseService.instance.getAllLocations());
+  }
 
   void _startLocationService() async {
     try {
-      // already started
-      if (await LocationService.instance.isRunningService) {
-        return;
-      }
-
-      LocationService.instance.start();
-    } catch (e, s) {
-      handleError(e, s);
+      if (await LocationService.instance.isRunningService) return;
+      await LocationService.instance.start();
+    } catch (e) {
+      Get.snackbar("Error", e.toString(), snackPosition: SnackPosition.BOTTOM);
     }
   }
 
-  void _onLocationChanged(Location location) {
-    locationListenable.value = location;
-  }
-
   @override
-  void attach(State state) {
-    super.attach(state);
-    LocationService.instance.addLocationChangedCallback(_onLocationChanged);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _startLocationService();
-    });
-  }
-
-  @override
-  void dispose() {
+  void onClose() {
     LocationService.instance.removeLocationChangedCallback(_onLocationChanged);
-    locationListenable.dispose();
-    super.dispose();
+    DatabaseService.instance.close();
+    super.onClose();
   }
 }
