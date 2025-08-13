@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gps_tracker/controllers/location_controller.dart';
 import 'package:gps_tracker/services/database_service.dart';
 import 'package:gps_tracker/services/location_service.dart';
 import 'package:gps_tracker/views/main_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await DatabaseService.instance.init();
+
   LocationService.instance.init();
+
+  Get.put(LocationController(), permanent: true);
+
   runApp(const MyApp());
 }
 

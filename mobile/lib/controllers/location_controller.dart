@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:gps_tracker/services/database_service.dart';
 import 'package:gps_tracker/services/location_service.dart';
 
-class MainPageController extends GetxController {
+class LocationController extends GetxController {
   Rx<Location?> location = Rx<Location?>(null);
   List<Map<String, dynamic>> storedLocations = <Map<String, dynamic>>[].obs;
 

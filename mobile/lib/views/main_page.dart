@@ -1,9 +1,9 @@
 import 'package:fl_location/fl_location.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:gps_tracker/controllers/main_page_controller.dart';
+import 'package:gps_tracker/controllers/location_controller.dart';
 
-class MainPage extends StatelessWidget {
+class MainPage extends GetView<LocationController> {
   const MainPage({super.key});
 
   List<DataCell> _buildDataCells(String key, dynamic value) {
@@ -12,8 +12,6 @@ class MainPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(MainPageController());
-
     return Scaffold(
       appBar: AppBar(title: const Text('Location Service'), centerTitle: true),
       body: Obx(() {
